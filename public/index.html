@@ -1,0 +1,68 @@
+<!doctype html>
+meta.textContent = `${user} • ${time}`;
+const body = document.createElement('div');
+body.textContent = text;
+div.append(meta, body);
+messages.appendChild(div);
+messages.scrollTop = messages.scrollHeight;
+}
+
+
+socket.on('init', ({history, users}) => {
+usersEl.textContent = `${users.length} online`;
+history.forEach(m => addMsg(m));
+});
+
+
+socket.on('users', (list) => {
+usersEl.textContent = `${list.length} online`;
+});
+
+
+socket.on('system', (s) => {
+const div = document.createElement('div');
+div.className = 'msg system';
+div.textContent = `• ${s.text}`;
+messages.appendChild(div);
+messages.scrollTop = messages.scrollHeight;
+});
+
+
+socket.on('message', (m) => {
+addMsg(m, m.user === myName ? 'me' : '');
+});
+
+
+socket.on('typing', ({user, isTyping}) => {
+typingEl.textContent = isTyping ? `${user} is typing…` : '';
+});
+
+
+sendBtn.onclick = () => send();
+input.addEventListener('keydown', (e) => {
+if(e.key === 'Enter') send();
+else socket.emit('typing', true);
+});
+input.addEventListener('keyup', () => {
+clearTimeout(window.__t);
+window.__t = setTimeout(() => socket.emit('typing', false), 600);
+});
+
+
+function send(){
+const text = input.value.trim();
+if(!text) return;
+socket.emit('message', text);
+input.value = '';
+socket.emit('typing', false);
+}
+
+
+saveNameBtn.onclick = () => {
+myName = nameInput.value.trim();
+localStorage.setItem('name', myName);
+socket.emit('set-name', myName);
+};
+</script>
+</body>
+</html>
